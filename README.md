@@ -26,7 +26,7 @@ Create a system that generates MNIST-like images using flow matching in a latent
 ## Technical Constraints
 
 - **Dataset**: MNIST handwritten digits,  You may only train on the *training* subset. 
-- **Latent Space**: Choose dimensionality from 3 to 16D.  (16 is the max. But start with 3!)
+- **Latent Space**: Choose dimensionality from 3 to 49 (7x7). 
 - **Framework**: PyTorch ("raw") or Lightning
 - **Save/Load**: Must implement model checkpointing to Google Drive
 
