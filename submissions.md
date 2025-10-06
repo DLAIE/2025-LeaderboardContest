@@ -51,3 +51,16 @@ def download_weights(gdrive_url: str, local_path: str) -> str:
     return local_path
 ```
 
+My evaluation code will run something like this (WIP): 
+```python
+import importlib.util
+spec = importlib.util.spec_from_file_location("submission", "team_name_submission.py")
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
+submission = module.SubmissionInterface()
+submission.load_vae('vae_weights.safetensors')
+submission.load_flow_model('flow_weights.safetensors')
+samples = submission.generate_samples(100)
+# etc etc etc 
+```
