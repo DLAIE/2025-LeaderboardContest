@@ -81,7 +81,6 @@ class SubmissionInterface:
         gdown.download(safetensors_link, output, quiet=False, fuzzy=True)
         self.flow_model = SimpleFlowModel(latent_dim=self.latent_dim)
         self.flow_model.load_state_dict(load_file(output))
-        self.flow_model.to(self.device)
     
     def generate_samples(self, n_samples:int, n_steps:int) -> torch.Tensor:
         z0 = torch.randn([n_samples, self.latent_dim]).to(self.device)
