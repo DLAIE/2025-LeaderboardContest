@@ -256,3 +256,13 @@ if __name__ == "__main__":
 
     # FID scores (but FID is technically for ImageNet not MNIST, so maybe not the best metric here)
 
+
+    # make dataframe of main metrics for gen'd images: Params, MSE, SSIM, Entropy, KL Div, Conf 
+    import pandas as pd
+    column_labels = ['Params ↓', 'MSE ↓', 'SSIM ↑', 'Entropy ↓', 'KL Div ↓', 'Conf ↑']
+    df = pd.DataFrame(columns=column_labels)
+    df.loc[0] = [metrics['total_params'], metrics['mse'], metrics['ssim'], metrics['entropy'], metrics['kl_div_classes'], metrics['gen_confidence']]
+    print("\nSummary of main metrics for generated images:")
+    # make sure to print params as integer with commas
+    df['Params ↓'] = df['Params ↓'].apply(lambda x: f"{int(x):,}")
+    print(df.to_string(index=False))
