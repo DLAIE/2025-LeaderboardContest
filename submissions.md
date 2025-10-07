@@ -52,8 +52,8 @@ def download_weights(gdrive_url: str, local_path: str) -> str:
 ```
 
 
-Here's a more complete example: 
-```
+Here's a more complete example of a `SubmissionInterface`: 
+```python
 from safetensors.torch import load_file
 import gdown
 
