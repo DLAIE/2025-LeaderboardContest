@@ -18,6 +18,7 @@ from skimage.metrics import structural_similarity as ssim
 import argparse 
 import gdown
 import os
+import time 
 
 DATASET_INFO = {
     'name': 'MNIST',
@@ -165,10 +166,16 @@ if __name__ == "__main__":
     gen_batch_size = min(2048, len(mnist_test))  # don't exceed test set size
     print(f"\nGenerating {gen_batch_size} samples from flow model...")
     with torch.no_grad():
-        samples = submission.generate_samples(n_samples=gen_batch_size, n_steps=100).to(device)
-        if samples.max() > 1.0 or samples.min() < 0.0:
+        start = time.time()
+        samples = submission.generate_samples(n_samples=gen_batch_size).to(device)
+        if samples.max() > 1.0 or samples.min() < 0.0:   # note: me having to do this will incur for you a small time penalty ;-) 
             print("WARNING: generated samples out of [0,1] range, applying sigmoid.")
             samples = torch.sigmoid(samples)  # ensure in [0,1] range
+        gen_time = time.time() - start
+        metrics['gen_time'] = gen_time
+        metrics['time_per_sample'] = gen_time / gen_batch_size
+        print(f"Sample generation took {gen_time:.6f} seconds, {metrics['time_per_sample']*1000:.4f} ms/sample.")
+
 
     # evaluate generated samples...
 
@@ -254,10 +261,22 @@ if __name__ == "__main__":
 
     # FID scores (but FID is technically for ImageNet not MNIST, so maybe not the best metric here)
 
+    from scipy.stats import wasserstein_distance
+
+    # # Flatten images and compute 1D Wasserstein.... Nah! too slow
+    # real_flat = real_images.flatten().cpu().numpy()
+    # gen_flat = samples.flatten().cpu().numpy()
+    # w_dist = wasserstein_distance(real_flat, gen_flat)
+    # print(f"Wasserstein distance (lower is better) ↓: {w_dist}")
+
 
     print("\nSummary of main metrics:")
-    print(f"{'Team':<15} | {'Params ↓':>10} | {'MSE ↓':>8} {'SSIM ↑':>8} |  {'Entropy↓':>10}   {'KL Div ↓':>10}  {'Conf ↑':>8}")
-    print("-" * 90)
-    parts = [ f"{metrics['team']:<15}", f"{metrics['total_params']:>10,}", f"{metrics['mse']:>8.4f} {metrics['ssim']:>8.4f}",
-        f"{metrics['entropy']:>10.4f}   {metrics['kl_div_classes']:>10.4f}   {metrics['gen_confidence']:>8.4f}"]
+    print(f"{'Team':<15} | {'Params ↓':>10} {'GenT(s)↓':>10} {'ms/samp↓':>10} | {'MSE ↓':>8} {'SSIM ↑':>8} | {'Entropy↓':>10} {'KL Div↓':>10} {'Conf ↑':>8}")
+    print("-" * 110)
+    parts = [ 
+        f"{metrics['team']:<15}",
+        f"{metrics['total_params']:>10,} {metrics['gen_time']:>10.4f} {metrics['time_per_sample']*1000:>10.4f}",
+        f"{metrics['mse']:>8.4f} {metrics['ssim']:>8.4f}",
+        f"{metrics['entropy']:>10.4f} {metrics['kl_div_classes']:>10.4f} {metrics['gen_confidence']:>8.4f}"
+    ]
     print(" | ".join(parts))
