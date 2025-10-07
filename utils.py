@@ -7,8 +7,7 @@ def save_and_share(model, filename='vae_model.safetensors', overwrite=True):
     from googleapiclient.discovery import build
     import os
     
-    # Mount drive if not already mounted
-    if not os.path.exists('/content/drive'):
+    if not os.path.exists('/content/drive'): # Mount drive if not already mounted
         drive.mount('/content/drive')
     
     # Save model
@@ -24,12 +23,7 @@ def save_and_share(model, filename='vae_model.safetensors', overwrite=True):
     # Get shareable link
     auth.authenticate_user()
     service = build('drive', 'v3')
-    
-    results = service.files().list(
-        q=f"name='{filename}'",
-        fields='files(id)'
-    ).execute()
-    
+    results = service.files().list( q=f"name='{filename}'", fields='files(id)').execute()
     if results.get('files'):
         file_id = results['files'][0]['id']
         service.permissions().create(
