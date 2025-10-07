@@ -73,7 +73,7 @@ class SubmissionInterface:
         safetensors_link = "https://drive.google.com/file/d/xxxx1/view?usp=sharing"
         output = 'downloaded_vae.safetensors'
         gdown.download(safetensors_link, output, quiet=False, fuzzy=True)
-        self.vae = SimpleVAEModel(latent_dim=self.latent_dim).to(device)
+        self.vae = SimpleVAEModel(latent_dim=self.latent_dim)
         self.vae.load_state_dict(load_file(output))
         
     def load_flow_model(self):
