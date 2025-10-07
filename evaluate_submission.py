@@ -105,6 +105,7 @@ class ResNet(FlexibleCNN):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate a submission model.")
+    # we'll do teamname_submission.py.  so "sample" isn't really a team, it's just an example.
     parser.add_argument('--submission', type=str, default='sample_submission.py', help='Path to the submission file.')
     args = parser.parse_args()
 
@@ -120,6 +121,7 @@ if __name__ == "__main__":
     spec.loader.exec_module(module)
 
     metrics = {}
+    metrics['team'] = submission_file.split('_')[0]
 
     # instantiate the submission class
     submission = module.SubmissionInterface().to(device)
@@ -255,12 +257,9 @@ if __name__ == "__main__":
     # FID scores (but FID is technically for ImageNet not MNIST, so maybe not the best metric here)
 
 
-    # make dataframe of main metrics for gen'd images: Params, MSE, SSIM, Entropy, KL Div, Conf 
-    import pandas as pd
-    column_labels = ['Params ↓', 'MSE ↓', 'SSIM ↑', 'Entropy ↓', 'KL Div ↓', 'Conf ↑']
-    df = pd.DataFrame(columns=column_labels)
-    df.loc[0] = [metrics['total_params'], metrics['mse'], metrics['ssim'], metrics['entropy'], metrics['kl_div_classes'], metrics['gen_confidence']]
-    print("\nSummary of main metrics (for gen'd images where appropriate):")
-    # make sure to print params as integer with commas
-    df['Params ↓'] = df['Params ↓'].apply(lambda x: f"{int(x):,}")
-    print(df.to_string(index=False))
+    print("\nSummary of main metrics:")
+    print(f"{'Team':<15} | {'Params ↓':>10} | {'MSE ↓':>8} {'SSIM ↑':>8} | {'Entropy↓':>10}  {'KL Div ↓':>10}   {'Conf ↑':>8}")
+    print("-" * 90)
+    parts = [ f"{metrics['team']:<15}", f"{metrics['total_params']:>10,}", f"{metrics['mse']:>8.4f} {metrics['ssim']:>8.4f}",
+        f"{metrics['entropy']:>10.4f}   {metrics['kl_div_classes']:>10.4f}   {metrics['gen_confidence']:>8.4f}"]
+    print(" | ".join(parts))
