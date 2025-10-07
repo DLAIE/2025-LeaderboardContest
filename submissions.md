@@ -67,7 +67,7 @@ class SubmissionInterface:
     def load_vae(self):
         """this completely specifies the vae model including configuration parameters,
            downloads/mounts the weights from Google Drive, automatically loads weights"""
-        safetensors_link = "https://drive.google.com/file/d/xxxx1/view?usp=sharing"
+        safetensors_link = "https://drive.google.com/file/d/your_fileid_here/view?usp=sharing"
         output = 'downloaded_vae.safetensors'
         gdown.download(safetensors_link, output, quiet=False, fuzzy=True)
         self.vae = SimpleVAEModel(latent_dim=self.latent_dim)
@@ -76,7 +76,7 @@ class SubmissionInterface:
     def load_flow_model(self):
         """this completely specifies the flow model including configuration parameters,
            downloads/mounts the weights from Google Drive, automatically loads weights"""
-        safetensors_link = "https://drive.google.com/file/d/xxxx2/view?usp=sharing"
+        safetensors_link = "https://drive.google.com/file/d/your_other_fileid_here/view?usp=sharing"
         output = 'downloaded_flow.safetensors'
         gdown.download(safetensors_link, output, quiet=False, fuzzy=True)
         self.flow_model = SimpleFlowModel(latent_dim=self.latent_dim)
