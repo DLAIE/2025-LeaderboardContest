@@ -19,7 +19,6 @@ import argparse
 import gdown
 import os
 
-
 DATASET_INFO = {
     'name': 'MNIST',
     'num_classes': 10,
@@ -158,9 +157,9 @@ if __name__ == "__main__":
     metrics['ssim'] = ssim_avg
 
     # flow model generation
-    gen_batch_size = 512 # bigger is better for statistical metrics
+    gen_batch_size = min(2048, len(mnist_test))  # don't exceed test set size
+    print(f"\nGenerating {gen_batch_size} samples from flow model...")
     with torch.no_grad():
-        print("Generating samples...")
         samples = submission.generate_samples(n_samples=gen_batch_size, n_steps=100).to(device)
         if samples.max() > 1.0 or samples.min() < 0.0:
             print("WARNING: generated samples out of [0,1] range, applying sigmoid.")
@@ -186,7 +185,59 @@ if __name__ == "__main__":
     # more stuff... (work in progress)  
 
     # statistical comparisons between distibutions of ground truth images & gen'd images:
+    # get mnist test images, use random choice but without duplicate indices
+    random_indices = np.random.choice(len(mnist_test), size=gen_batch_size, replace=False)
+    real_images = torch.stack([mnist_test[i][0] for i in random_indices]).to(device)
+
     #  mean, std, kl divergence, wasserstein/sinkhorn distance, ...
+    real_mean = real_images.mean().item()
+    real_std = real_images.std().item()
+    gen_mean = samples.mean().item()
+    gen_std = samples.std().item()
+    metrics['real_mean'] = real_mean
+    metrics['real_std'] = real_std
+    metrics['gen_mean'] = gen_mean
+    metrics['gen_std'] = gen_std
+    print(f"Real  images - mean: {real_mean}, std: {real_std}")
+    print(f"Gen'd images - mean: {gen_mean}, std: {gen_std}")
+
+    # Diversity: Compare predicted class distributions (real vs generated)
+    real_logits = deep_resnet(real_images)
+    real_preds = real_logits.argmax(dim=1)  # predicted classes
+    gen_preds = logits.argmax(dim=1)
+
+    # Count how many of each digit (0-9)
+    real_class_counts = torch.bincount(real_preds, minlength=10).float() / len(real_preds)
+    gen_class_counts = torch.bincount(gen_preds, minlength=10).float() / len(gen_preds)
+
+    kl_div = F.kl_div(gen_class_counts.log(), real_class_counts, reduction='sum').item()
+    metrics['kl_div_classes'] = kl_div
+
+    print(f"KL Divergence of class distributions (lower is better) ↓: {kl_div}")
+    #print(f"Real class distribution: {real_class_counts.cpu().numpy()}")
+    #print(f"Gen  class distribution: {gen_class_counts.cpu().numpy()}")
+    print(f"Class Distribution Comparison:\n{'   Real':20s} {'  Generated':15s}")
+    for i in range(10):
+        real_val = real_class_counts[i].item()
+        gen_val = gen_class_counts[i].item()
+        real_bar = '█' * int(real_val * 50)
+        gen_bar = '█' * int(gen_val * 50)
+        print(f"{i}: {real_bar:10s} ({real_val:.3f})  {gen_bar:10s} ({gen_val:.3f})")
+
+
+    # Confidence comparison: how confident is the classifier on real vs generated?
+    real_logits = deep_resnet(real_images)
+    real_probs = F.softmax(real_logits, dim=1)
+    real_max_probs = real_probs.max(dim=1)[0]  # max prob for each image
+    gen_max_probs = probs.max(dim=1)[0]
+
+    real_avg_conf = real_max_probs.mean().item()
+    gen_avg_conf = gen_max_probs.mean().item()
+
+    metrics['real_confidence'] = real_avg_conf
+    metrics['gen_confidence'] = gen_avg_conf
+    print(f"Real images - avg classifier confidence (higher is better) ↑: {real_avg_conf}")
+    print(f"Gen  images - avg classifier confidence (higher is better) ↑: {gen_avg_conf}")
 
     # FID scores (but FID is technically for ImageNet not MNIST, so maybe not the best metric here)
 
