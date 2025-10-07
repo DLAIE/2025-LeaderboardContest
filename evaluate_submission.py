@@ -226,11 +226,6 @@ if __name__ == "__main__":
     # Count how many of each digit (0-9)
     real_class_counts = torch.bincount(real_preds, minlength=10).float() / len(real_preds)
     gen_class_counts = torch.bincount(gen_preds, minlength=10).float() / len(gen_preds)
-
-    kl_div = F.kl_div(gen_class_counts.log(), real_class_counts, reduction='sum').item()
-    metrics['kl_div_classes'] = kl_div
-
-    print(f"KL Divergence of class distributions (lower is better) ↓: {kl_div:.4f}")
     #print(f"Real class distribution: {real_class_counts.cpu().numpy()}")
     #print(f"Gen  class distribution: {gen_class_counts.cpu().numpy()}")
     print(f"Class Distribution Comparison:\n{'   Real':20s} {'  Generated':15s}")
@@ -241,6 +236,9 @@ if __name__ == "__main__":
         gen_bar = '█' * int(gen_val * 50)
         print(f"{i}: {real_bar:10s} ({real_val:.3f})  {gen_bar:10s} ({gen_val:.3f})")
 
+    kl_div = F.kl_div(gen_class_counts.log(), real_class_counts, reduction='sum').item()
+    metrics['kl_div_classes'] = kl_div
+    print(f"KL Divergence of class distributions (lower is better) ↓: {kl_div:.4f}\n")
 
     # Confidence comparison: how confident is the classifier on real vs generated?
     real_max_probs = real_probs.max(dim=1)[0]  # max prob for each image
