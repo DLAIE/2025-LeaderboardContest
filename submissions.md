@@ -24,7 +24,7 @@ class SubmissionInterface:
         # self.flow_model = ...
         raise NotImplementedError
     
-    def generate_samples(self, n_samples: int) -> torch.Tensor:
+    def generate_samples(self, n_samples: int, n_steps: int) -> torch.Tensor:
         # returns (n_samples, 28, 28), normalized on [0,1]
         raise NotImplementedError
     
