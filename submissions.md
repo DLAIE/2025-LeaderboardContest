@@ -86,7 +86,7 @@ class SubmissionInterface:
     def generate_samples(self, n_samples:int, n_steps:int) -> torch.Tensor:
         z0 = torch.randn([n_samples, self.latent_dim]).to(self.device)
         z1 = integrate_path(self.flow_model, z0, n_steps=n_steps)
-        gen_xhat = F.sigmoid(vae.decoder(z1).view(-1, 28, 28))
+        gen_xhat = F.sigmoid(self.decode(z1).view(-1, 28, 28))
         return gen_xhat
 
     def encode(self, images: torch.Tensor) -> torch.Tensor:
