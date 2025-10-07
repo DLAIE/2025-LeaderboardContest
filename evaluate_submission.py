@@ -119,12 +119,17 @@ if __name__ == "__main__":
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
+    metrics = {}
 
     # instantiate the submission class
     submission = module.SubmissionInterface().to(device)
     submission.vae.eval()
     submission.flow_model.eval()
 
+    # total number of parameters across vae and flow model 
+    total_params = sum(p.numel() for p in submission.vae.parameters()) + sum(p.numel() for p in submission.flow_model.parameters())
+    print(f"Total parameters in VAE + Flow Model: {total_params:,}\n")
+    metrics['total_params'] = total_params
 
     # encode and decode testing data
     with torch.no_grad():
@@ -140,8 +145,6 @@ if __name__ == "__main__":
             recon = torch.sigmoid(recon)  # ensure in [0,1] range
         images, recon = images.cpu(), recon.cpu() # easier this way
 
-    # what metrics will we use... (work in progress)
-    metrics = {}
 
     # MSE of reconstructions
     mse = F.mse_loss(recon, images.view(-1, 28, 28))
