@@ -58,7 +58,7 @@ def generate_leaderboard(submissions_file='submissions_full.csv', output_file='l
     print("\n" + "="*100)
     print("LEADERBOARD")
     print("="*100)
-    display_cols = ['team'] + metrics_cols + ['overall_rank']
+    display_cols = ['team'] + ['time_stamp']+ metrics_cols + ['overall_rank']
     print(df[display_cols].to_string(index=False))
     
     return df
