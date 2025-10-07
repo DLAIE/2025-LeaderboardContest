@@ -58,9 +58,6 @@ from safetensors.torch import load_file
 import gdown
 
 class SubmissionInterface:
-    """All teams must implement this for automated evaluation.
-    When you subclass/implement these methods, replace the NotImplementedError."""
-    
     def __init__(self):
         self.device = 'cpu' 
         self.latent_dim = 3
