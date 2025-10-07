@@ -146,14 +146,14 @@ if __name__ == "__main__":
     # MSE of reconstructions
     mse = F.mse_loss(recon, images.view(-1, 28, 28))
     metrics['mse'] = mse.item()
-    print(f"Reconstruction MSE (lower is better) ↓: {mse.item()}") 
+    print(f"Reconstruction MSE (lower is better) ↓: {mse.item():.4f}") 
 
     # SSIM of reconstructions
     ssim_total = 0.0
     for i in range(recon.shape[0]):
         ssim_total += ssim(recon[i].cpu().numpy(), images[i].view(28, 28).cpu().numpy(), data_range=1.0)
     ssim_avg = ssim_total / recon.shape[0]
-    print(f"Reconstruction SSIM (higher is better) ↑: {ssim_avg}")
+    print(f"Reconstruction SSIM (higher is better) ↑: {ssim_avg:.4f}")
     metrics['ssim'] = ssim_avg
 
     # flow model generation
@@ -175,12 +175,14 @@ if __name__ == "__main__":
         gdown.download(shareable_link, resnet_weights_file, quiet=False, fuzzy=True)
     deep_resnet.load_state_dict(load_file(resnet_weights_file))
     samples = samples.unsqueeze(1)  # add channel dim
+
     logits = deep_resnet(samples)
     probs = F.softmax(logits, dim=1)
     entropy = -torch.sum(probs * torch.log(probs + 1e-8), dim=1)  # add small value to avoid log(0)
     avg_entropy = entropy.mean().item()
-    print(f"Avg. predictive entropy of generated samples (lower is better) ↓: {avg_entropy}")
+    print(f"Avg. predictive entropy of gen'd samples (lower is better) ↓: {avg_entropy:.4f}")
     metrics['entropy'] = avg_entropy  
+
 
     # more stuff... (work in progress)  
 
@@ -188,6 +190,16 @@ if __name__ == "__main__":
     # get mnist test images, use random choice but without duplicate indices
     random_indices = np.random.choice(len(mnist_test), size=gen_batch_size, replace=False)
     real_images = torch.stack([mnist_test[i][0] for i in random_indices]).to(device)
+
+    real_logits = deep_resnet(real_images)
+    real_probs = F.softmax(real_logits, dim=1)
+    real_entropy = -torch.sum(real_probs * torch.log(real_probs + 1e-8), dim=1)
+    avg_real_entropy = real_entropy.mean().item()
+    print(f"Avg. predictive entropy of real  samples (lower is better) ↓: {avg_real_entropy:.4f}")
+    metrics['real_entropy'] = avg_real_entropy
+
+
+
 
     #  mean, std, kl divergence, wasserstein/sinkhorn distance, ...
     real_mean = real_images.mean().item()
@@ -198,11 +210,11 @@ if __name__ == "__main__":
     metrics['real_std'] = real_std
     metrics['gen_mean'] = gen_mean
     metrics['gen_std'] = gen_std
-    print(f"Real  images - mean: {real_mean}, std: {real_std}")
-    print(f"Gen'd images - mean: {gen_mean}, std: {gen_std}")
+    print(f"Gen'd images - mean: {gen_mean:.4f}, std: {gen_std:.4f}")
+    print(f"Real  images - mean: {real_mean:.4f}, std: {real_std:.4f}")
 
     # Diversity: Compare predicted class distributions (real vs generated)
-    real_logits = deep_resnet(real_images)
+    
     real_preds = real_logits.argmax(dim=1)  # predicted classes
     gen_preds = logits.argmax(dim=1)
 
@@ -213,7 +225,7 @@ if __name__ == "__main__":
     kl_div = F.kl_div(gen_class_counts.log(), real_class_counts, reduction='sum').item()
     metrics['kl_div_classes'] = kl_div
 
-    print(f"KL Divergence of class distributions (lower is better) ↓: {kl_div}")
+    print(f"KL Divergence of class distributions (lower is better) ↓: {kl_div:.4f}")
     #print(f"Real class distribution: {real_class_counts.cpu().numpy()}")
     #print(f"Gen  class distribution: {gen_class_counts.cpu().numpy()}")
     print(f"Class Distribution Comparison:\n{'   Real':20s} {'  Generated':15s}")
@@ -236,8 +248,8 @@ if __name__ == "__main__":
 
     metrics['real_confidence'] = real_avg_conf
     metrics['gen_confidence'] = gen_avg_conf
-    print(f"Real images - avg classifier confidence (higher is better) ↑: {real_avg_conf}")
-    print(f"Gen  images - avg classifier confidence (higher is better) ↑: {gen_avg_conf}")
+    print(f"Gen  images - avg classifier confidence (higher is better) ↑: {gen_avg_conf:.4f}")
+    print(f"Real images - avg classifier confidence (higher is better) ↑: {real_avg_conf:.4f}")
 
     # FID scores (but FID is technically for ImageNet not MNIST, so maybe not the best metric here)
 
