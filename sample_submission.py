@@ -86,10 +86,19 @@ class SubmissionInterface(nn.Module):
     
     def __init__(self):
         super().__init__()
-        self.device = 'cpu' 
-        self.latent_dim = 3
+
+        #--- REQUIRED INFO:
+        self.info = { 
+            'team': 'sample',  # REPLACE with your team name. This will be public
+            'names': 'Your Name(s) Here', # or single name. This will be kept private
+        }
+        self.latent_dim = 3   # TODO: we could just (re)measure this on the fly 
+        #---- 
+
+        # keep support for full auto-initialization:
         self.load_vae()
         self.load_flow_model()
+        self.device = 'cpu' # we can change this later via .to()
     
     def load_vae(self):
         """this completely specifies the vae model including configuration parameters,
