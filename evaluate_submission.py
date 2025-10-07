@@ -258,7 +258,7 @@ if __name__ == "__main__":
 
 
     print("\nSummary of main metrics:")
-    print(f"{'Team':<15} | {'Params ↓':>10} | {'MSE ↓':>8} {'SSIM ↑':>8} | {'Entropy↓':>10}  {'KL Div ↓':>10}   {'Conf ↑':>8}")
+    print(f"{'Team':<15} | {'Params ↓':>10} | {'MSE ↓':>8} {'SSIM ↑':>8} |  {'Entropy↓':>10}   {'KL Div ↓':>10}  {'Conf ↑':>8}")
     print("-" * 90)
     parts = [ f"{metrics['team']:<15}", f"{metrics['total_params']:>10,}", f"{metrics['mse']:>8.4f} {metrics['ssim']:>8.4f}",
         f"{metrics['entropy']:>10.4f}   {metrics['kl_div_classes']:>10.4f}   {metrics['gen_confidence']:>8.4f}"]
