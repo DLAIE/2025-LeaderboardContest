@@ -241,8 +241,6 @@ if __name__ == "__main__":
 
 
     # Confidence comparison: how confident is the classifier on real vs generated?
-    real_logits = deep_resnet(real_images)
-    real_probs = F.softmax(real_logits, dim=1)
     real_max_probs = real_probs.max(dim=1)[0]  # max prob for each image
     gen_max_probs = probs.max(dim=1)[0]
 
@@ -262,7 +260,7 @@ if __name__ == "__main__":
     column_labels = ['Params ↓', 'MSE ↓', 'SSIM ↑', 'Entropy ↓', 'KL Div ↓', 'Conf ↑']
     df = pd.DataFrame(columns=column_labels)
     df.loc[0] = [metrics['total_params'], metrics['mse'], metrics['ssim'], metrics['entropy'], metrics['kl_div_classes'], metrics['gen_confidence']]
-    print("\nSummary of main metrics for generated images:")
+    print("\nSummary of main metrics (for gen'd images where appropriate):")
     # make sure to print params as integer with commas
     df['Params ↓'] = df['Params ↓'].apply(lambda x: f"{int(x):,}")
     print(df.to_string(index=False))
