@@ -103,7 +103,11 @@ class SubmissionInterface:
         self.device = device 
         self.vae.to(self.device)
         self.flow_model.to(self.device)
-        return self 
+        return self
+
+
+mysub = SubmissionInterface().to('cuda')
+xhat_gen = mysub.generate_samples(n_samples=10, n_steps=100)
 ```
 
 
