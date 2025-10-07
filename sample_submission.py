@@ -1,5 +1,9 @@
 ## Sample submission file for the VAE + Flow leaderboard challenge
 ## Author: Scott H. Hawley, Oct 6 2025 
+
+# NOTE: This is a basic baseline submission (latent_dim=3, simple MLP)
+# You should be able to significantly outperform these metrics!
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
