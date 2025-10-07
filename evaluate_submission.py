@@ -122,7 +122,12 @@ if __name__ == "__main__":
     spec.loader.exec_module(module)
 
     metrics = {}
-    metrics['team'] = submission_file.split('_')[0]
+    try: 
+        metrics['team'] = module.SubmissionInterface().info['team']
+    except Exception as e:
+        print("WARNING: No team name in submission.info, trying filename instead.")
+        metrics['team'] = submission_file.split('_')[0]
+    print(f"Team name: {metrics['team']}")
 
     # instantiate the submission class
     submission = module.SubmissionInterface().to(device)
@@ -280,3 +285,15 @@ if __name__ == "__main__":
         f"{metrics['entropy']:>10.4f} {metrics['kl_div_classes']:>10.4f} {metrics['gen_confidence']:>8.4f}"
     ]
     print(" | ".join(parts))
+
+    time_stamp = time.strftime("%Y%m%d-%H%M%S")
+
+    # append to submissions_full.csv file
+    csv_file = 'submissions_full.csv'
+    print("Appending results to", csv_file)
+    write_header = not os.path.exists(csv_file)
+    with open(csv_file, 'a') as f:
+        if write_header:
+            f.write("team,total_params,gen_time,time_per_sample,mse,ssim,entropy,kl_div_classes,gen_confidence,real_confidence,real_entropy,real_mean,real_std,gen_mean,gen_std,time_stamp\n")
+        f.write(f"{metrics['team']},{metrics['total_params']},{metrics['gen_time']:.6f},{metrics['time_per_sample']:.6f},{metrics['mse']:.6f},{metrics['ssim']:.6f},{metrics['entropy']:.6f},{metrics['kl_div_classes']:.6f},{metrics['gen_confidence']:.6f},{metrics['real_confidence']:.6f},{metrics['real_entropy']:.6f},{metrics['real_mean']:.6f},{metrics['real_std']:.6f},{metrics['gen_mean']:.6f},{metrics['gen_std']:.6f},{time_stamp}\n")
+
