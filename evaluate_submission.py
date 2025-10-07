@@ -176,7 +176,6 @@ if __name__ == "__main__":
         gdown.download(shareable_link, resnet_weights_file, quiet=False, fuzzy=True)
     deep_resnet.load_state_dict(load_file(resnet_weights_file))
     samples = samples.unsqueeze(1)  # add channel dim
-    print("samples.shape:", samples.shape)
     logits = deep_resnet(samples)
     probs = F.softmax(logits, dim=1)
     entropy = -torch.sum(probs * torch.log(probs + 1e-8), dim=1)  # add small value to avoid log(0)
