@@ -51,6 +51,63 @@ def download_weights(gdrive_url: str, local_path: str) -> str:
     return local_path
 ```
 
+
+Here's a more complete example: 
+```
+from safetensors.torch import load_file
+import gdown
+
+class SubmissionInterface:
+    """All teams must implement this for automated evaluation.
+    When you subclass/implement these methods, replace the NotImplementedError."""
+    
+    def __init__(self):
+        self.device = 'cpu' 
+        self.latent_dim = 3
+        self.load_vae()
+        self.load_flow_model()
+    
+    def load_vae(self):
+        """this completely specifies the vae model including configuration parameters,
+           downloads/mounts the weights from Google Drive, automatically loads weights"""
+        safetensors_link = "https://drive.google.com/file/d/xxxx1/view?usp=sharing"
+        output = 'downloaded_vae.safetensors'
+        gdown.download(safetensors_link, output, quiet=False, fuzzy=True)
+        self.vae = SimpleVAEModel(latent_dim=self.latent_dim).to(device)
+        self.vae.load_state_dict(load_file(output))
+        
+    def load_flow_model(self):
+        """this completely specifies the flow model including configuration parameters,
+           downloads/mounts the weights from Google Drive, automatically loads weights"""
+        safetensors_link = "https://drive.google.com/file/d/xxxx2/view?usp=sharing"
+        output = 'downloaded_flow.safetensors'
+        gdown.download(safetensors_link, output, quiet=False, fuzzy=True)
+        self.flow_model = SimpleFlowModel(latent_dim=self.latent_dim)
+        self.flow_model.load_state_dict(load_file(output))
+        self.flow_model.to(self.device)
+    
+    def generate_samples(self, n_samples:int, n_steps:int) -> torch.Tensor:
+        z0 = torch.randn([n_samples, self.latent_dim]).to(self.device)
+        z1 = integrate_path(self.flow_model, z0, n_steps=n_steps)
+        gen_xhat = F.sigmoid(vae.decoder(z1).view(-1, 28, 28))
+        return gen_xhat
+
+    def encode(self, images: torch.Tensor) -> torch.Tensor:
+        # TODO: we should somehow gracefully handle flattening for linear/conv layers. 
+        return self.vae.encoder(images)
+    
+    def decode(self, latents: torch.Tensor) -> torch.Tensor:
+        return self.vae.decoder(latents)
+
+    def to(self, device):
+        self.device = device 
+        self.vae.to(self.device)
+        self.flow_model.to(self.device)
+        return self 
+```
+
+
+
 My evaluation code will run something like this (WIP): 
 ```python
 import importlib.util
