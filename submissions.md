@@ -2,7 +2,7 @@
 
 
 
-Your code must include a section that implements/subclasses the `SubmissionInterface` with the following endpoints: 
+Your code must include a section that implements/subclasses the `SubmissionInterface` with the following endpoints:  **See [sample_submission.py](sample_submission.py) for full details -- just modify that!** 
 
 ```python
 class SubmissionInterface:
@@ -10,7 +10,17 @@ class SubmissionInterface:
     When you subclass/implement these methods, replace the NotImplementedError."""
     
     def __init__(self):
-        self.vae, self.flow_model = None, None
+
+        self.info = { 
+            'team': 'sample',  # REPLACE with your team name. This will be public
+            'names': 'Your Name(s) Here', # or single name. This will be kept private
+        }
+        self.latent_dim = 3   # TODO: we could just (re)measure this on the fly 
+
+        # keep support for full auto-initialization:
+        self.load_vae()
+        self.load_flow_model()
+        self.device = 'cpu' # we can change this later via .to()
     
     def load_vae(self, weights_path: str):
         """this completely specifies the vae model including configuration parameters,
