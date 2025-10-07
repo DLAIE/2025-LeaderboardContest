@@ -1,9 +1,5 @@
 ## Sample submission file for the VAE + Flow leaderboard challenge
 ## Author: Scott H. Hawley, Oct 6 2025 
-
-# NOTE: This is a basic baseline submission (latent_dim=3, simple MLP)
-# You should be able to significantly outperform these metrics!
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -115,7 +111,7 @@ class SubmissionInterface(nn.Module):
             gdown.download(safetensors_link, flow_weights_file, quiet=False, fuzzy=True)
         self.flow_model.load_state_dict(load_file(flow_weights_file))
     
-    def generate_samples(self, n_samples:int, n_steps:int) -> torch.Tensor:
+    def generate_samples(self, n_samples:int, n_steps=100) -> torch.Tensor:
         z0 = torch.randn([n_samples, self.latent_dim]).to(self.device)
         z1 = integrate_path(self.flow_model, z0, n_steps=n_steps)
         gen_xhat = F.sigmoid(self.decode(z1).view(-1, 28, 28))
