@@ -90,7 +90,7 @@ You will perform your own analysis and document them as part of your results, ye
 
 **Prizes include:**
 
-- **One pair of WanB Signature AirPod Pros** that I've been waiting to use as a prize..
+- **One pair of Weights & Biases Signature AirPod Pros** that I've been waiting to use as a prize..
 - Swag from the BDAIC, CoreWeave, and/or other organizations.
 - / **TBD**.
 
