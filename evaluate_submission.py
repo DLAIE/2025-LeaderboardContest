@@ -29,13 +29,17 @@ def get_submission(submission_file, device='cpu'):
     import ast
     
     with open(submission_file, 'r') as f:
-        tree = ast.parse(f.read())
+        # python file may contain Jupyter shell commands and magics (!, %, %%); filter them
+        lines = [line for line in f.readlines()   if not line.strip().startswith(('!', '%', '%%'))]
+        source = ''.join(lines)
+    
+    tree = ast.parse(source)
     nodes = [n for n in tree.body if isinstance(n, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef, ast.Import, ast.ImportFrom))]
     safe_module = ast.Module(body=nodes, type_ignores=[])
     ast.fix_missing_locations(safe_module)
     namespace = {'torch': torch, 'nn': nn, 'F': F, 'load_file': load_file, 'gdown': gdown, 'os': os}
     exec(compile(safe_module, submission_file, 'exec'), namespace)
-    return namespace['SubmissionInterface']().to(device)
+    return namespace['SubmissionInterface']()
 
 
 
