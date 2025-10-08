@@ -19,7 +19,7 @@ def generate_leaderboard(submissions_file='submissions_full.csv', output_file='l
     # Select columns for leaderboard
     metrics_cols = ['total_params', 'time_per_sample', 'mse', 'ssim', 
                     'entropy', 'kl_div_classes', 'gen_confidence']
-    keep_cols = ['team', 'names', 'time_stamp'] + metrics_cols
+    keep_cols = ['team', 'time_stamp'] + metrics_cols
     df = df[keep_cols].copy()
     
     # Rank each metric (lower rank = better)
