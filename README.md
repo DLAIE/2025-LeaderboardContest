@@ -66,7 +66,7 @@ You will perform your own analysis and document them as part of your results, ye
 
 - **Assignment Released**: Fri October 3
 - **Submissions Begin**: Wed Oct 8 
-- **Submissions End**: Sat October 11 11:59 PM US Central time.  -- *So you still get a few more days of Fall Break to rest ;-)* 
+- **Submissions End**: ~~Sat October 11 11:59 PM US Central time.~~  Sun October 12 5:30 PM US Central Time
 - **Results Announced:** by Fri October 17.
 
 ## Resources
@@ -91,7 +91,7 @@ You will perform your own analysis and document them as part of your results, ye
 **Prizes include:**
 
 - **One pair of WanB Signature AirPod Pros** that I've been waiting to use as a prize..
-- Swag from the BDAIC, WandB, Hugging Face, and/or other organizations.
+- Swag from the BDAIC, CoreWeave, and/or other organizations.
 - / **TBD**.
 
 ## Tips for Success
