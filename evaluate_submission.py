@@ -11,7 +11,6 @@ import numpy as np
 import importlib.util
 from torchvision.datasets import MNIST
 from torch.utils.data import DataLoader
-from torchvision.utils import make_grid
 from safetensors.torch import load_file
 import matplotlib.pyplot as plt
 from skimage.metrics import structural_similarity as ssim
@@ -19,6 +18,26 @@ import argparse
 import gdown
 import os
 import time 
+import csv
+
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning, module='pydantic')
+
+
+def get_submission(submission_file, device='cpu'):
+    """Safely loads only SubmissionInterface, skipping executable code."""
+    import ast
+    
+    with open(submission_file, 'r') as f:
+        tree = ast.parse(f.read())
+    nodes = [n for n in tree.body if isinstance(n, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef, ast.Import, ast.ImportFrom))]
+    safe_module = ast.Module(body=nodes, type_ignores=[])
+    ast.fix_missing_locations(safe_module)
+    namespace = {'torch': torch, 'nn': nn, 'F': F, 'load_file': load_file, 'gdown': gdown, 'os': os}
+    exec(compile(safe_module, submission_file, 'exec'), namespace)
+    return namespace['SubmissionInterface']().to(device)
+
+
 
 DATASET_INFO = {
     'name': 'MNIST',
@@ -105,6 +124,9 @@ class ResNet(FlexibleCNN):
 
 
 if __name__ == "__main__":
+    device = 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'
+    print("Using device:", device)
+
     parser = argparse.ArgumentParser(description="Evaluate a submission model.")
     # we'll do teamname_submission.py.  so "sample" isn't really a team, it's just an example.
     parser.add_argument('--submission', type=str, default='sample_submission.py', help='Path to the submission file.')
@@ -112,29 +134,24 @@ if __name__ == "__main__":
 
     submission_file = args.submission
     print(f"Evaluating submission from file: {submission_file}")
+    # instantiate the submission class
+    #submission = module.SubmissionInterface().to(device)
+    submission = get_submission(submission_file).to(device)
+    submission.vae.eval()
+    submission.flow_model.eval()
 
-    device = 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'
-    print("Using device:", device)
-
-    # read in the submission file as a module
-    spec = importlib.util.spec_from_file_location("submission", submission_file)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
 
     metrics = {}
     try: 
-        metrics['team'] = module.SubmissionInterface().info['team']
+        metrics['team'] = submission.info['team']
     except Exception as e:
         print("WARNING: No team name in submission.info, trying filename instead.")
         metrics['team'] = submission_file.split('_')[0]
     print(f"Team name: {metrics['team']}")
-    metrics['names'] = module.SubmissionInterface().info.get('names', 'N/A')
+    metrics['names'] = submission.info.get('names', 'N/A')
     print(f"Team members: {metrics['names']}\n")
 
-    # instantiate the submission class
-    submission = module.SubmissionInterface().to(device)
-    submission.vae.eval()
-    submission.flow_model.eval()
+
 
     # total number of parameters across vae and flow model 
     total_params = sum(p.numel() for p in submission.vae.parameters()) + sum(p.numel() for p in submission.flow_model.parameters())
@@ -294,8 +311,12 @@ if __name__ == "__main__":
     csv_file = 'submissions_full.csv'
     print("Appending results to", csv_file)
     write_header = not os.path.exists(csv_file)
-    with open(csv_file, 'a') as f:
-        if write_header:
-            f.write("team,names,total_params,gen_time,time_per_sample,mse,ssim,entropy,kl_div_classes,gen_confidence,real_confidence,real_entropy,real_mean,real_std,gen_mean,gen_std,time_stamp\n")
-        f.write(f"{metrics['team']},{metrics['names']},{metrics['total_params']},{metrics['gen_time']:.6f},{metrics['time_per_sample']:.6f},{metrics['mse']:.6f},{metrics['ssim']:.6f},{metrics['entropy']:.6f},{metrics['kl_div_classes']:.6f},{metrics['gen_confidence']:.6f},{metrics['real_confidence']:.6f},{metrics['real_entropy']:.6f},{metrics['real_mean']:.6f},{metrics['real_std']:.6f},{metrics['gen_mean']:.6f},{metrics['gen_std']:.6f},{time_stamp}\n")
-
+    # with open(csv_file, 'a') as f:
+    #     if write_header:
+    #         f.write("team,names,total_params,gen_time,time_per_sample,mse,ssim,entropy,kl_div_classes,gen_confidence,real_confidence,real_entropy,real_mean,real_std,gen_mean,gen_std,time_stamp\n")
+    #     f.write(f"{metrics['team']},{metrics['names']},{metrics['total_params']},{metrics['gen_time']:.6f},{metrics['time_per_sample']:.6f},{metrics['mse']:.6f},{metrics['ssim']:.6f},{metrics['entropy']:.6f},{metrics['kl_div_classes']:.6f},{metrics['gen_confidence']:.6f},{metrics['real_confidence']:.6f},{metrics['real_entropy']:.6f},{metrics['real_mean']:.6f},{metrics['real_std']:.6f},{metrics['gen_mean']:.6f},{metrics['gen_std']:.6f},{time_stamp}\n")
+    with open(csv_file, 'a', newline='') as f:
+        writer = csv.writer(f)
+        if not os.path.exists(csv_file) or os.path.getsize(csv_file) == 0: 
+            writer.writerow(['team','names','total_params','gen_time','time_per_sample','mse','ssim','entropy','kl_div_classes','gen_confidence','real_confidence','real_entropy','real_mean','real_std','gen_mean','gen_std','time_stamp'])
+        writer.writerow([metrics['team'], metrics['names'], metrics['total_params'], metrics['gen_time'], metrics['time_per_sample'], metrics['mse'], metrics['ssim'], metrics['entropy'], metrics['kl_div_classes'], metrics['gen_confidence'], metrics['real_confidence'], metrics['real_entropy'], metrics['real_mean'], metrics['real_std'], metrics['gen_mean'], metrics['gen_std'], time_stamp])
