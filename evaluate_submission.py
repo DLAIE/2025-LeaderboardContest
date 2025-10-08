@@ -19,9 +19,26 @@ import gdown
 import os
 import time 
 import csv
+from contextlib import contextmanager
+import tempfile
+import shutil
 
 import warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pydantic')
+
+
+@contextmanager
+def in_temp_submission_dir(submission_file):
+    """Context manager that copies submission to temp dir and switches to it."""
+    original_dir = os.getcwd()
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_submission = os.path.join(temp_dir, os.path.basename(submission_file))
+        shutil.copy(submission_file, temp_submission)
+        os.chdir(temp_dir)
+        try:
+            yield temp_submission
+        finally:
+            os.chdir(original_dir)
 
 
 def get_submission(submission_file, device='cpu'):
@@ -30,7 +47,7 @@ def get_submission(submission_file, device='cpu'):
     
     with open(submission_file, 'r') as f:
         # python file may contain Jupyter shell commands and magics (!, %, %%); filter them
-        lines = [line for line in f.readlines()   if not line.strip().startswith(('!', '%', '%%'))]
+        lines = [line for line in f.readlines() if not line.strip().startswith(('!', '%', '%%'))]
         source = ''.join(lines)
     
     tree = ast.parse(source)
@@ -138,12 +155,12 @@ if __name__ == "__main__":
 
     submission_file = args.submission
     print(f"Evaluating submission from file: {submission_file}")
+    
     # instantiate the submission class
-    #submission = module.SubmissionInterface().to(device)
-    submission = get_submission(submission_file).to(device)
-    submission.vae.eval()
-    submission.flow_model.eval()
-
+    with in_temp_submission_dir(submission_file) as temp_file:
+        submission = get_submission(temp_file).to(device)
+        submission.vae.eval()
+        submission.flow_model.eval()
 
     metrics = {}
     try: 
