@@ -47,7 +47,8 @@ def get_submission(submission_file, device='cpu'):
     
     with open(submission_file, 'r') as f:
         # python file may contain Jupyter shell commands and magics (!, %, %%); filter them
-        lines = [line for line in f.readlines() if not line.strip().startswith(('!', '%', '%%'))]
+        lines = [line for line in f.readlines()  if not line.strip().startswith(('!', '%', '%%')) 
+            and not ('google.colab' in line and 'import' in line)]
         source = ''.join(lines)
     
     tree = ast.parse(source)
