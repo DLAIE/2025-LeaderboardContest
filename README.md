@@ -34,12 +34,10 @@ Create a system that generates MNIST-like images using flow matching in a latent
 
 Teams will be ranked across multiple categories using a ranking-sum system (lower total rank = better):
 
-1. **VAE Reconstruction Quality**: MSE and/or SSIM between original and reconstructed images
-2. **VAE Generation Consistency**: (Pretrained) Classifier confidence statistics on samples from latent space
+1. **VAE Reconstruction Quality**: MSE and SSIM between original and reconstructed images
 3. **Flow Model Sample Quality**: Classifier evaluation of end-to-end generated images
 4. **Flow Model Generative Diversity:** Genereate all digits, not just a few. 
 5. **Model Efficiency**: Total number of parameters across VAE + flow model
-6. **Training Performance**: Convergence speed and final loss values
 
 You will perform your own analysis and document them as part of your results, yet the official leaderboard rankings will be computed using Dr. Hawley's measurement codes.
 
@@ -53,14 +51,8 @@ You will perform your own analysis and document them as part of your results, ye
 ## Deliverables
 
 1. **Working Code**: Jupyter notebook(s) with complete pipeline
-2. **Documentation:** In the form of a README file, explaining how to execute all parts. 
-3. **Model Weights**: Saved checkpoints for reproducibility, via shareable Google Drive link. **Use [safetensors](https://huggingface.co/docs/safetensors/en/index) format.**
-4. **Results Analysis**: 
-   - Performance across all evaluation metrics
-   - Sample visualizations and latent space analysis
-   - Discussion of architectural choices and trade-offs
-5. **Generated Samples**: Representative outputs from your system
-6. **Submission via GitHub Pull Request or Canvas (TBA):** For code, docs, and analysis. (You may use anonymized usernames if you want.) Format and Domain  Working on the system. Announced via update later.
+2. **Model Weights**: Saved checkpoints for reproducibility, via shareable Google Drive link. **Use [safetensors](https://huggingface.co/docs/safetensors/en/index) format.**
+3. **Submission via Canvas:** Upload your .ipynb file to the Leaderboard assignment in our class's Canvas page. 
 
 ## Timeline
 
