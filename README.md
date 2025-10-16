@@ -78,7 +78,7 @@ You will perform your own analysis and document them as part of your results, ye
 
 - **"Open Innovation" award**: "Anything goes" approach. Best rank overall.
 - **"Sustainable AI" award**: MNIST-only data from scratch (no pretraining), with compute limits (must be entirely trainable on free Colab tier)
-- **"Efficient Architecture" award**: Lowest parameter count while meeting quality thresholds
+- **"Efficient Architecture" award**: Lowest rank for parameter count and execution time while meeting quality thresholds
 
 **Prizes include:**
 
