@@ -15,8 +15,6 @@ class SubmissionInterface:
             'team': 'sample',  # REPLACE with your team name. This will be public
             'names': 'Your Name(s) Here', # or single name. This will be kept private
         }
-        self.latent_dim = 3   # TODO: we could just (re)measure this on the fly 
-
         # keep support for full auto-initialization:
         self.load_vae()
         self.load_flow_model()
@@ -118,7 +116,7 @@ xhat_gen = mysub.generate_samples(n_samples=10, n_steps=100)
 
 
 
-My evaluation code will run something like this (WIP): 
+My evaluation code will run something like this...
 ```python
 import importlib.util
 spec = importlib.util.spec_from_file_location("submission", "team_name_submission.py")
@@ -131,3 +129,4 @@ submission.load_flow_model('flow_weights.safetensors')
 samples = submission.generate_samples(100)
 # etc etc etc 
 ```
+For full details of evaluation, see [`evaluate_submission.py`](https://github.com/dlaieburner/2025-leaderboard-open/blob/main/evaluate_submission.py) on the "burner account" bot runs the contest. 
