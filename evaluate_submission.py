@@ -143,7 +143,7 @@ class ResNet(FlexibleCNN):
 
 
 def setup_resnet(resnet_weights_file = 'downloaded_resnet.safetensors'): 
-    deep_resnet = ResNet(blocks_per_level=4).to(device)
+    deep_resnet = ResNet(blocks_per_level=4)
     deep_resnet.eval()
     if not os.path.exists(resnet_weights_file):
         print("Downloading resnet weights..") 
@@ -235,7 +235,7 @@ if __name__ == "__main__":
     # evaluate generated samples...
 
     # Use pretrained "deep" ResNet from lesson 06b to evaluate generated images 
-    deep_resnet = setup_resnet()
+    deep_resnet = setup_resnet().to(device)
 
     samples = samples.unsqueeze(1)  # add channel dim
     logits = deep_resnet(samples)
