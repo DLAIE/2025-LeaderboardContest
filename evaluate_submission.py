@@ -13,7 +13,6 @@ from torchvision.datasets import MNIST
 from torch.utils.data import DataLoader
 from safetensors.torch import load_file
 import matplotlib.pyplot as plt
-from skimage.metrics import structural_similarity as ssim
 import argparse 
 import gdown
 import os
@@ -209,6 +208,7 @@ if __name__ == "__main__":
     metrics['mse'] = mse.item()
     print(f"Reconstruction MSE (lower is better) ↓: {mse.item():.4f}") 
 
+    from skimage.metrics import structural_similarity as ssim
     # SSIM of reconstructions
     ssim_total = 0.0
     for i in range(recon.shape[0]):
