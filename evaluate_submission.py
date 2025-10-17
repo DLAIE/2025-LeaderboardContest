@@ -143,6 +143,15 @@ class ResNet(FlexibleCNN):
 
 
 
+def setup_resnet(resnet_weights_file = 'downloaded_resnet.safetensors'): 
+    deep_resnet = ResNet(blocks_per_level=4).to(device)
+    deep_resnet.eval()
+    if not os.path.exists(resnet_weights_file):
+        print("Downloading resnet weights..") 
+        shareable_link = "https://drive.google.com/file/d/1kW_wnq-J_41_ESyQUX1PJD9-vvbWbCQ8/view?usp=sharing"
+        gdown.download(shareable_link, resnet_weights_file, quiet=False, fuzzy=True)
+    deep_resnet.load_state_dict(load_file(resnet_weights_file))
+    return deep_resnet
 
 
 if __name__ == "__main__":
@@ -226,14 +235,9 @@ if __name__ == "__main__":
     # evaluate generated samples...
 
     # Use pretrained "deep" ResNet from lesson 06b to evaluate generated images 
-    deep_resnet = ResNet(blocks_per_level=4).to(device)
-    resnet_weights_file = 'downloaded_resnet.safetensors'
-    if not os.path.exists(resnet_weights_file):
-        shareable_link = "https://drive.google.com/file/d/1kW_wnq-J_41_ESyQUX1PJD9-vvbWbCQ8/view?usp=sharing"
-        gdown.download(shareable_link, resnet_weights_file, quiet=False, fuzzy=True)
-    deep_resnet.load_state_dict(load_file(resnet_weights_file))
-    samples = samples.unsqueeze(1)  # add channel dim
+    deep_resnet = setup_resnet()
 
+    samples = samples.unsqueeze(1)  # add channel dim
     logits = deep_resnet(samples)
     probs = F.softmax(logits, dim=1)
     entropy = -torch.sum(probs * torch.log(probs + 1e-8), dim=1)  # add small value to avoid log(0)
